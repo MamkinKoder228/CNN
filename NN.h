@@ -107,6 +107,7 @@ void PredictNN(NN *Net, Real *X, Real *Y){
 
 void Train(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRate){
 	assert(Net->LayerCount > 0 && "NN must have at least one layer!");
+	assert(Net->LayerCount == 1 && "NN must have just least ONE layer!");
 	Real* Z[NN_MAX_LAYERS];
 	Real* H[NN_MAX_LAYERS + 1];
 	size_t MaxYDim = 0;
