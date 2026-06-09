@@ -6,7 +6,7 @@
 
 #define NN_MAX_LAYERS 32
 #define randu(Min, Max) ((Real)rand() / (Real)RAND_MAX * ((Real)Max - (Real)Min) + (Real)Min)
-#define max(a, b) (a > b? a : b)
+#define max(a, b) ((a) > (b)? (a) : (b))
 #define RANDOM_INIT_HIGHER_BOUND 0.5
 #define RANDOM_INIT_LOWER_BOUND -0.5
 #define sign(a) (a > 0? 1: -1)
@@ -101,6 +101,14 @@ void AddLayer(NN *Net, size_t XDim, size_t YDim, ActivationFunction Activation, 
 	Net->ArenaSize = max(Net->ArenaSize, XDim * YDim);
 }
 
+void ClearNN(NN *Net){
+	for (size_t i = 0; i < Net->LayerCount; ++i){
+		free(Net->Layers[i].W);
+		free(Net->Layers[i].B);
+	}
+	Net->LayerCount = 0;
+}
+
 void Feed(Layer *L, Real *X, Real *Y){
 	for (size_t i = 0; i < L->YDim; ++i){
 		Y[i] = L->B[i];
@@ -126,7 +134,7 @@ void PredictNN(NN *Net, Real *X, Real *Y){
 	Real *Arena = malloc(Net->ArenaSize * sizeof(Real));
 	
 	Feed(Net->Layers, X, Net->LayerCount == 1? Y : Arena);
-	for (int i = 1; i < Net->LayerCount; ++i){
+	for (size_t i = 1; i < Net->LayerCount; ++i){
 		Feed(Net->Layers + i, Arena, i == Net->LayerCount - 1? Y : Arena);
 	}
 	free(Arena);
@@ -136,7 +144,8 @@ void CorrectWeights(Layer *L, Real *X, Real *Loss, Real *D, Real *dX, Real Learn
 	for (size_t i = 0; i < L->XDim; ++i){
 		dX[i] = 0;
 		for (size_t j = 0; j < L->YDim; ++j){
-			dX[i] += Loss[j] / L->YDim * D[j] * 0.5;
+			// dX[i] += Loss[j] / L->YDim * D[j] * 0.5;
+			dX[i] += Loss[j] * D[j] * L->W[i + j * L->XDim];
 		}
 	}
 

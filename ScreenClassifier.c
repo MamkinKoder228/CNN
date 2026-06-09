@@ -43,9 +43,9 @@ void DrawClasses(){
 			X[0] = (double)x / (double)WINDOW_WIDTH - 0.5;
 			X[1] = (double)y / (double)WINDOW_HEIGHT - 0.5;
 			PredictNN(&Net, X, Y);
-			// putpixel(x, y, Y[0] >= 0.5? YELLOW : CYAN);
-			int C = max(0, (Y[0] + 1)/2 * 255) > 255? 255 : max(0, Y[0] * 255);
-			putpixel(x, y, COLOR(C, C, C));
+			putpixel(x, y, Y[0] >= 0.5? YELLOW : CYAN);
+			// int C = max(0, (Y[0] + 1)/2 * 255) > 255? 255 : max(0, Y[0] * 255);
+			// putpixel(x, y, COLOR(C, C, C));
 		}
 	}
 }
