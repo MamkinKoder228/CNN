@@ -9,7 +9,7 @@
 #define max(a, b) (a > b? a : b)
 #define RANDOM_INIT_HIGHER_BOUND 0.5
 #define RANDOM_INIT_LOWER_BOUND -0.5
-#define sign(a) (a > 0? a: -a)
+#define sign(a) (a > 0? 1: -1)
 
 #ifdef NN_USE_FLOAT
 	typedef float Real;
@@ -42,6 +42,7 @@ void DLReLU(Real *X, Real *Y, size_t n);
 void Sigmoid(Real *X, Real *Y, size_t n);
 void DSigmoid(Real *X, Real *Y, size_t n);
 void AddLayer(NN *Net, size_t XDim, size_t YDim, ActivationFunction Activation, ActivationDerivative Derivative);
+void ClearNN(NN *Net);
 void Feed(Layer *L, Real *X, Real *Y);
 void FeedWithoutActivation(Layer *L, Real *X, Real *Y);
 void FeedNN(NN *Net, Real *X, Real *Y);
@@ -135,7 +136,7 @@ void CorrectWeights(Layer *L, Real *X, Real *Loss, Real *D, Real *dX, Real Learn
 	for (size_t i = 0; i < L->XDim; ++i){
 		dX[i] = 0;
 		for (size_t j = 0; j < L->YDim; ++j){
-			dX[i] += Loss[j] / L->YDim * sign(D[j]) * 1;
+			dX[i] += Loss[j] / L->YDim * D[j] * 0.5;
 		}
 	}
 
@@ -191,7 +192,7 @@ void TrainGD(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRa
 			}
 			TotalLoss += SampleLoss;
 		}
-		printf("%d %.4f\n", epoch, TotalLoss / n);
+		// printf("%d %.4f\n", epoch, TotalLoss / n);
 	}
 	for (size_t i = 0; i < Net->LayerCount; ++i){
 		free(H[i + 1]);

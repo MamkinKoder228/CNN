@@ -54,13 +54,13 @@ int main(void){
 	InitScreen(WINDOW_WIDTH, WINDOW_HEIGHT, "NN screen classifier");
 
 	AddLayer(&Net, 2, 30, LReLU, DLReLU);
-	AddLayer(&Net, 30, 1, LReLU, DLReLU);
+	AddLayer(&Net, 30, 1, Sigmoid, DSigmoid);
 
 	while (!(kbhit() && lastkey() == 'q')){
 		int mtype = mouseclick();
 
 		if (mtype == SDL_BUTTON_LEFT || mtype == SDL_BUTTON_RIGHT){
-			AddPoint(mousex(), mousey(), mtype == SDL_BUTTON_RIGHT? -1:1);
+			AddPoint(mousex(), mousey(), mtype == SDL_BUTTON_RIGHT? 0:1);
 		}
 
 		if (pointCount > 1){
