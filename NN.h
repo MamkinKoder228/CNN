@@ -1,9 +1,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <math.h>
+#pragma once
+
 #define NN_MAX_LAYERS 32
 #define randu(Min, Max) ((Real)rand() / (Real)RAND_MAX * ((Real)Max - (Real)Min) + (Real)Min)
 #define max(a, b) (a > b? a : b)
+#define RANDOM_INIT_HIGHER_BOUMD 0
+#define RANDOM_INIT_LOWER_BOUND -0
 
 #ifdef NN_USE_FLOAT
 	typedef float Real;
@@ -27,16 +32,22 @@ typedef struct {
 	Layer Layers[NN_MAX_LAYERS];
 } NN;
 
+// Function declarations
+
 Real* CreateRandomMatrix(size_t XDim, size_t YDim, Real Min, Real Max);
 void RandomInit(Real *Y, Real Min, Real Max, size_t n);
 void LReLU(Real *X, Real *Y, size_t n);
 void DLReLU(Real *X, Real *Y, size_t n);
+void Sigmoid(Real *X, Real *Y, size_t n);
+void DSigmoid(Real *X, Real *Y, size_t n);
 void AddLayer(NN *Net, size_t XDim, size_t YDim, ActivationFunction Activation, ActivationDerivative Derivative);
 void Feed(Layer *L, Real *X, Real *Y);
 void FeedWithoutActivation(Layer *L, Real *X, Real *Y);
 void FeedNN(NN *Net, Real *X, Real *Y);
 void CorrectWeights(Layer *L, Real *X, Real *Loss, Real *D, Real *dX, Real LearningRate);
 void Train(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRate);
+
+// Function definitions
 
 Real* CreateRandomMatrix(size_t XDim, size_t YDim, Real Min, Real Max){
 	Real *Y = malloc(XDim * YDim * sizeof(Real));
@@ -64,11 +75,23 @@ void DLReLU(Real *X, Real *Y, size_t n){
 	}
 }
 
+void Sigmoid(Real *X, Real *Y, size_t n){
+	for (size_t i = 0; i < n; ++i){
+		Y[i] = 1 / (1 + exp(-X[i]));
+	}
+}
+
+void DSigmoid(Real *X, Real *Y, size_t n){
+	for (size_t i = 0; i < n; ++i){
+		Y[i] = 1 / (1 + exp(-X[i])) * (1 - 1 / (1 + exp(-X[i])));
+	}
+}
+
 void AddLayer(NN *Net, size_t XDim, size_t YDim, ActivationFunction Activation, ActivationDerivative Derivative){
 	assert(Net->LayerCount <= NN_MAX_LAYERS && "Too many layers!");
 	randu(-420, 228);
-	Net->Layers[Net->LayerCount].W = CreateRandomMatrix(XDim, YDim, -15, 15);
-	Net->Layers[Net->LayerCount].B = CreateRandomMatrix(YDim, 1, -15, 15);
+	Net->Layers[Net->LayerCount].W = CreateRandomMatrix(XDim, YDim, RANDOM_INIT_LOWER_BOUND, RANDOM_INIT_HIGHER_BOUMD);
+	Net->Layers[Net->LayerCount].B = CreateRandomMatrix(YDim, 1, RANDOM_INIT_LOWER_BOUND, RANDOM_INIT_HIGHER_BOUMD);
 	Net->Layers[Net->LayerCount].XDim = XDim;
 	Net->Layers[Net->LayerCount].YDim = YDim;
 	Net->Layers[Net->LayerCount].Activation = Activation;
@@ -111,7 +134,7 @@ void CorrectWeights(Layer *L, Real *X, Real *Loss, Real *D, Real *dX, Real Learn
 	for (size_t i = 0; i < L->XDim; ++i){
 		dX[i] = 0;
 		for (size_t j = 0; j < L->YDim; ++j){
-			dX[i] += 2 * Loss[j] * D[j] * L->W[i + j * L->XDim] * LearningRate;
+			dX[i] += 2 * Loss[j] * D[j] * L->W[i + j * L->XDim] * 10;
 		}
 	}
 
@@ -124,20 +147,22 @@ void CorrectWeights(Layer *L, Real *X, Real *Loss, Real *D, Real *dX, Real Learn
 }
 
 void Train(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRate){
+	if (!epochs || !n) return;
 	assert(Net->LayerCount > 0 && "NN must have at least one layer!");
 	Real* Z[NN_MAX_LAYERS];
 	Real* H[NN_MAX_LAYERS + 1];
-	size_t MaxYDim = 0;
+	size_t MaxDim = 0;
 	for (size_t i = 0; i < Net->LayerCount; ++i){
 		H[i + 1] = malloc(Net->Layers[i].YDim * sizeof(Real));
 		Z[i] = malloc(Net->Layers[i].YDim * sizeof(Real));
-		MaxYDim = max(MaxYDim, Net->Layers[i].YDim);
+		MaxDim = max(Net->Layers[i].XDim, max(MaxDim, Net->Layers[i].YDim));
 	}
 
-	Real *L = malloc(MaxYDim * sizeof(Real));
-	Real *L2 = malloc(MaxYDim * sizeof(Real));
+	Real *L = malloc(MaxDim * sizeof(Real));
+	Real *L2 = malloc(MaxDim * sizeof(Real));
 	Real *Lt;
-	Real *D = malloc(MaxYDim * sizeof(Real));
+	Real *D = malloc(MaxDim * sizeof(Real));
+
 
 	for (size_t epoch = 0; epoch < epochs; ++epoch){
 		for (size_t sample = 0; sample < n; ++sample){
