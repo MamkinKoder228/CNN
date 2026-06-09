@@ -7,8 +7,9 @@
 #define NN_MAX_LAYERS 32
 #define randu(Min, Max) ((Real)rand() / (Real)RAND_MAX * ((Real)Max - (Real)Min) + (Real)Min)
 #define max(a, b) (a > b? a : b)
-#define RANDOM_INIT_HIGHER_BOUMD 0
-#define RANDOM_INIT_LOWER_BOUND -0
+#define RANDOM_INIT_HIGHER_BOUND 0.1
+#define RANDOM_INIT_LOWER_BOUND -0.1
+#define sign(a) (a > 0? a: -a)
 
 #ifdef NN_USE_FLOAT
 	typedef float Real;
@@ -45,7 +46,7 @@ void Feed(Layer *L, Real *X, Real *Y);
 void FeedWithoutActivation(Layer *L, Real *X, Real *Y);
 void FeedNN(NN *Net, Real *X, Real *Y);
 void CorrectWeights(Layer *L, Real *X, Real *Loss, Real *D, Real *dX, Real LearningRate);
-void Train(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRate);
+void TrainGD(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRate);
 
 // Function definitions
 
@@ -90,8 +91,8 @@ void DSigmoid(Real *X, Real *Y, size_t n){
 void AddLayer(NN *Net, size_t XDim, size_t YDim, ActivationFunction Activation, ActivationDerivative Derivative){
 	assert(Net->LayerCount <= NN_MAX_LAYERS && "Too many layers!");
 	randu(-420, 228);
-	Net->Layers[Net->LayerCount].W = CreateRandomMatrix(XDim, YDim, RANDOM_INIT_LOWER_BOUND, RANDOM_INIT_HIGHER_BOUMD);
-	Net->Layers[Net->LayerCount].B = CreateRandomMatrix(YDim, 1, RANDOM_INIT_LOWER_BOUND, RANDOM_INIT_HIGHER_BOUMD);
+	Net->Layers[Net->LayerCount].W = CreateRandomMatrix(XDim, YDim, RANDOM_INIT_LOWER_BOUND, RANDOM_INIT_HIGHER_BOUND);
+	Net->Layers[Net->LayerCount].B = CreateRandomMatrix(YDim, 1, RANDOM_INIT_LOWER_BOUND, RANDOM_INIT_HIGHER_BOUND);
 	Net->Layers[Net->LayerCount].XDim = XDim;
 	Net->Layers[Net->LayerCount].YDim = YDim;
 	Net->Layers[Net->LayerCount].Activation = Activation;
@@ -134,9 +135,10 @@ void CorrectWeights(Layer *L, Real *X, Real *Loss, Real *D, Real *dX, Real Learn
 	for (size_t i = 0; i < L->XDim; ++i){
 		dX[i] = 0;
 		for (size_t j = 0; j < L->YDim; ++j){
-			dX[i] += 2 * Loss[j] * D[j] * L->W[i + j * L->XDim] * 10;
+			dX[i] += Loss[j] / L->YDim * sign(D[j]) * 0.15;
 		}
 	}
+
 
 	for (size_t i = 0; i < L->YDim; ++i){
 		L->B[i] += -2 * Loss[i] * D[i] * LearningRate;
@@ -146,7 +148,7 @@ void CorrectWeights(Layer *L, Real *X, Real *Loss, Real *D, Real *dX, Real Learn
 	}
 }
 
-void Train(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRate){
+void TrainGD(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRate){
 	if (!epochs || !n) return;
 	assert(Net->LayerCount > 0 && "NN must have at least one layer!");
 	Real* Z[NN_MAX_LAYERS];
@@ -193,3 +195,4 @@ void Train(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRate
 	free(L2);
 	free(D);
 }
+
