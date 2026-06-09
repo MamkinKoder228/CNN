@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <BGI/graphics.c>
 #include "NN.h"
-#define MAX_POINTS 32
+#define MAX_POINTS 64
 #define WINDOW_HEIGHT 512
 #define WINDOW_WIDTH 512
 
@@ -44,7 +44,8 @@ void DrawClasses(){
 			X[1] = (double)y / (double)WINDOW_HEIGHT - 0.5;
 			PredictNN(&Net, X, Y);
 			// putpixel(x, y, Y[0] >= 0.5? YELLOW : CYAN);
-			putpixel(x, y, COLOR(Y[0] * 255, Y[0] * 255, Y[0] * 255));
+			int C = max(0, (Y[0] + 1)/2 * 255) > 255? 255 : max(0, Y[0] * 255);
+			putpixel(x, y, COLOR(C, C, C));
 		}
 	}
 }
@@ -52,22 +53,24 @@ void DrawClasses(){
 int main(void){
 	InitScreen(WINDOW_WIDTH, WINDOW_HEIGHT, "NN screen classifier");
 
-	AddLayer(&Net, 2, 4, LReLU, DLReLU);
-	AddLayer(&Net, 4, 4, LReLU, DLReLU);
-	AddLayer(&Net, 4, 1, Sigmoid, DSigmoid);
+	AddLayer(&Net, 2, 30, LReLU, DLReLU);
+	AddLayer(&Net, 30, 1, LReLU, DLReLU);
 
 	while (!(kbhit() && lastkey() == 'q')){
 		int mtype = mouseclick();
 
 		if (mtype == SDL_BUTTON_LEFT || mtype == SDL_BUTTON_RIGHT){
-			AddPoint(mousex(), mousey(), mtype == SDL_BUTTON_RIGHT? 0:1);
+			AddPoint(mousex(), mousey(), mtype == SDL_BUTTON_RIGHT? -1:1);
 		}
 
-		if (pointCount > 1)
-			Train(&Net, points, pointTypes, 2, 100, 1);
-			Train(&Net, points, pointTypes, pointCount, 1, 1e-3);
+		if (pointCount > 1){
+			TrainGD(&Net, points, pointTypes, pointCount, 1500, 5e-4);
+			// for (int i = 0; i < pointCount - 2; i += 2)
+				// Train(&Net, &points[i][0], &pointTypes[i], 2, 5, 1e-2);
+		}
 
-		cleardevice();
+		// cleardevice();
+		setbkcolor(BLACK);
 		DrawClasses();
 		DrawPoints();
 		refresh();

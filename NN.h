@@ -7,8 +7,8 @@
 #define NN_MAX_LAYERS 32
 #define randu(Min, Max) ((Real)rand() / (Real)RAND_MAX * ((Real)Max - (Real)Min) + (Real)Min)
 #define max(a, b) (a > b? a : b)
-#define RANDOM_INIT_HIGHER_BOUND 0.1
-#define RANDOM_INIT_LOWER_BOUND -0.1
+#define RANDOM_INIT_HIGHER_BOUND 0.5
+#define RANDOM_INIT_LOWER_BOUND -0.5
 #define sign(a) (a > 0? a: -a)
 
 #ifdef NN_USE_FLOAT
@@ -135,7 +135,7 @@ void CorrectWeights(Layer *L, Real *X, Real *Loss, Real *D, Real *dX, Real Learn
 	for (size_t i = 0; i < L->XDim; ++i){
 		dX[i] = 0;
 		for (size_t j = 0; j < L->YDim; ++j){
-			dX[i] += Loss[j] / L->YDim * sign(D[j]) * 0.15;
+			dX[i] += Loss[j] / L->YDim * sign(D[j]) * 1;
 		}
 	}
 
@@ -167,8 +167,11 @@ void TrainGD(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRa
 
 
 	for (size_t epoch = 0; epoch < epochs; ++epoch){
+		double TotalLoss = 0;
+
 		for (size_t sample = 0; sample < n; ++sample){
-			H[0] = &X[sample * Net->Layers[Net->LayerCount - 1].XDim];
+			double SampleLoss = 0;
+			H[0] = &X[sample * Net->Layers[0].XDim];
 			for (size_t i = 0; i < Net->LayerCount; ++i){
 				FeedWithoutActivation(&Net->Layers[i], H[i], Z[i]);
 				Net->Layers[i].Activation(Z[i], H[i + 1], Net->Layers[i].YDim);
@@ -176,6 +179,7 @@ void TrainGD(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRa
 
 			for (size_t i = 0; i < Net->Layers[Net->LayerCount - 1].YDim; ++i){
 				L[i] = H[Net->LayerCount][i] - Y[i + sample * Net->Layers[Net->LayerCount - 1].YDim];
+				SampleLoss += L[i] * L[i];
 			}
 
 			for (int i = Net->LayerCount - 1; i >= 0; --i){
@@ -185,7 +189,9 @@ void TrainGD(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRa
 				L = L2;
 				L2 = Lt;
 			}
+			TotalLoss += SampleLoss;
 		}
+		printf("%d %.4f\n", epoch, TotalLoss / n);
 	}
 	for (size_t i = 0; i < Net->LayerCount; ++i){
 		free(H[i + 1]);

@@ -5,10 +5,12 @@ int main(void){
 	srand(time(NULL));
 	NN Net = {0, 0};
 	AddLayer(&Net, 2, 2, LReLU, DLReLU);
-	AddLayer(&Net, 2, 1, LReLU, DLReLU);
+	AddLayer(&Net, 2, 1, Sigmoid, DSigmoid);
 	Real X[][2] = {{1, 0}, {0, 1}, {1, 1}, {0, 0}};
 	Real Y[][1] = {{1}, {1}, {0}, {0}};
 	Real B[4][1];
+
+	TrainGD(&Net, X, Y, 4, 150000, 1e-2);
 	
 	PredictNN(&Net, &X[0], &B[0]);
 	PredictNN(&Net, &X[1], &B[1]);
