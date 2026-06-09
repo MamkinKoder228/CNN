@@ -153,7 +153,7 @@ void CorrectWeights(Layer *L, Real *X, Real *Loss, Real *D, Real *dX, Real Learn
 	for (size_t i = 0; i < L->YDim; ++i){
 		L->B[i] += -2 * Loss[i] * D[i] * LearningRate;
 		for (size_t j = 0; j < L->XDim; ++j){
-			L->W[j + i * L->XDim] += -2 * Loss[i] * D[i] * X[j] * LearningRate;
+			L->W[j + i * L->XDim] += -Loss[i] * D[i] * X[j] * LearningRate;
 		}	
 	}
 }
