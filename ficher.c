@@ -1,7 +1,7 @@
-#include <stdlib.h>
+// #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "NN.h"
+#include "src/NN.h"
 
 int argmax(double *arr, int n){
 	double M = arr[0];

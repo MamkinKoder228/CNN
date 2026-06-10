@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <BGI/graphics.c>
-#include "NN.h"
+#include "src/NN.h"
 #define MAX_POINTS 64
 #define WINDOW_HEIGHT 512
 #define WINDOW_WIDTH 512
@@ -71,5 +71,7 @@ int main(void){
 		DrawPoints();
 		refresh();
 	}
+
+	ClearNN(&Net);
 	return 0;
 }
