@@ -150,7 +150,9 @@ void TrainGD(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRa
 			}
 			TotalLoss += SampleLoss;
 		}
-		// printf("%d %.4f\n", epoch, TotalLoss / n);
+		#ifdef NN_VERBOSE
+		printf("%d, %.4f\n", epoch, TotalLoss / n);
+		#endif
 	}
 	for (size_t i = 0; i < Net->LayerCount; ++i){
 		free(H[i + 1]);

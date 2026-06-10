@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 #include <math.h>
 #define NN_MAX_LAYERS 32

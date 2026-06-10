@@ -63,8 +63,8 @@ int main(int argc, char *argv[]){
 	double TestX[30][4];
 	double TestY[30][3];
 
-	int count = ParseData("iris.csv", ParsedX, ParsedY);
-	// printf("Records parsed: %d\n", count);
+	int count = ParseData("data/iris.csv", ParsedX, ParsedY);
+	printf("Records parsed: %d\n", count);
 	int j = 0, k = 0;
 
 	for (int i = 0; i < count; ++i){
@@ -92,9 +92,9 @@ int main(int argc, char *argv[]){
 	}
 
 	printf("Train:Test = %d:%d\n", j, k);
-	printf("Accuracy before training: %.3f%%\n", Accuracy(&Net, TestX, TestY, k));
-	TrainGD(&Net, TrainX, TrainY, j, 40000, 1e-2);
-	printf("Accuracy after training: %.3f%%\n", Accuracy(&Net, TestX, TestY, k));
+	printf("Validation accuracy before training: %.3f%%\n", Accuracy(&Net, TestX, TestY, k));
+	TrainGD(&Net, TrainX, TrainY, j, 4000, 1e-2);
+	printf("Validation accuracy after training: %.3f%%\n", Accuracy(&Net, TestX, TestY, k));
 
 	double X[4];
 	double Y[3];
