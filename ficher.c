@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
 		fgets(buffer, 64, stdin);
 		if (sscanf(buffer, "%lf %lf %lf %lf", &X[0], &X[1], &X[2], &X[3]) == 4){
 			PredictNN(&Net, X, Y);
-			printf("%.2f %.2f %.2f\n", Y[0], Y[1], Y[2]);
+			printf("%.3lf %.3lf %.3lf\n", Y[0], Y[1], Y[2]);
 		}
 	}
 
