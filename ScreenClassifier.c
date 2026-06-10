@@ -63,13 +63,9 @@ int main(void){
 			AddPoint(mousex(), mousey(), mtype == SDL_BUTTON_RIGHT? 0:1);
 		}
 
-		if (pointCount > 1){
+		if (pointCount > 1)
 			TrainGD(&Net, points, pointTypes, pointCount, 1500, 1e-3);
-			// for (int i = 0; i < pointCount - 2; i += 2)
-				// Train(&Net, &points[i][0], &pointTypes[i], 2, 5, 1e-2);
-		}
 
-		// cleardevice();
 		setbkcolor(BLACK);
 		DrawClasses();
 		DrawPoints();

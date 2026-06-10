@@ -56,15 +56,58 @@ int main(int argc, char *argv[]){
 	AddLayer(&Net, 4, 8, LReLU, DLReLU);
 	AddLayer(&Net, 8, 3, Sigmoid, DSigmoid);
 
+	double ParsedX[512][4];
+	double ParsedY[512][3];
 	double TrainX[512][4];
 	double TrainY[512][3];
+	double TestX[30][4];
+	double TestY[30][3];
 
-	int count = ParseData("iris.csv", TrainX, TrainY);
+	int count = ParseData("iris.csv", ParsedX, ParsedY);
 	// printf("Records parsed: %d\n", count);
+	int j = 0, k = 0;
 
-	printf("Accuracy before training: %.3f%%\n", Accuracy(&Net, TrainX, TrainY, 150));
-	TrainGD(&Net, TrainX, TrainY, count, 50000, 1e-2);
-	printf("Accuracy after training: %.3f%%\n", Accuracy(&Net, TrainX, TrainY, 150));
+	for (int i = 0; i < count; ++i){
+		if (i % 5){
+			TrainX[j][0] = ParsedX[i][0];
+			TrainX[j][1] = ParsedX[i][1];
+			TrainX[j][2] = ParsedX[i][2];
+			TrainX[j][3] = ParsedX[i][3];
+
+			TrainY[j][0] = ParsedY[i][0];
+			TrainY[j][1] = ParsedY[i][1];
+			TrainY[j][2] = ParsedY[i][2];
+			++j;
+		}else{
+			TestX[k][0] = ParsedX[i][0];
+			TestX[k][1] = ParsedX[i][1];
+			TestX[k][2] = ParsedX[i][2];
+			TestX[k][3] = ParsedX[i][3];
+
+			TestY[k][0] = ParsedY[i][0];
+			TestY[k][1] = ParsedY[i][1];
+			TestY[k][2] = ParsedY[i][2];
+			++k;
+		}
+	}
+
+	printf("Train:Test = %d:%d\n", j, k);
+	printf("Accuracy before training: %.3f%%\n", Accuracy(&Net, TestX, TestY, k));
+	TrainGD(&Net, TrainX, TrainY, j, 40000, 1e-2);
+	printf("Accuracy after training: %.3f%%\n", Accuracy(&Net, TestX, TestY, k));
+
+	double X[4];
+	double Y[3];
+	char buffer[64];
+
+	while (buffer[0] != 'q'){
+		fgets(buffer, 64, stdin);
+		if (sscanf(buffer, "%lf %lf %lf %lf", &X[0], &X[1], &X[2], &X[3]) == 4){
+			PredictNN(&Net, X, Y);
+			printf("%.2f %.2f %.2f\n", Y[0], Y[1], Y[2]);
+		}
+	}
+
 
 	return 0;
 }
