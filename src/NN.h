@@ -39,6 +39,7 @@ typedef struct {
 
 Real* CreateRandomMatrix(size_t XDim, size_t YDim, Real Min, Real Max);
 void RandomInit(Real *Y, Real Min, Real Max, size_t n);
+size_t argmax(Real *arr, size_t n);
 void LReLU(Real *X, Real *Y, size_t n);
 void DLReLU(Real *X, Real *Y, size_t n);
 void Sigmoid(Real *X, Real *Y, size_t n);

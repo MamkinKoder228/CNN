@@ -3,19 +3,6 @@
 #include <assert.h>
 #include "src/NN.h"
 
-int argmax(double *arr, int n){
-	double M = arr[0];
-	int max = 0;
-	for (int i = 0; i < n; ++i){
-		if (arr[i] >= M){
-			M = arr[i];
-			max = i;
-		}
-	}
-
-	return max;
-}
-
 int ParseData(char *filename, double X[], double Y[]){
 	FILE *fp = fopen(filename, "r");
 	assert(fp && "Couldn't open the file!");
@@ -52,6 +39,7 @@ double Accuracy(NN *Net, double *X, double *Y, int n){
 }
 
 int main(int argc, char *argv[]){
+	srand(time(NULL));
 	NN Net = {0, 0};
 	AddLayer(&Net, 4, 8, LReLU, DLReLU);
 	AddLayer(&Net, 8, 3, Sigmoid, DSigmoid);
@@ -93,7 +81,7 @@ int main(int argc, char *argv[]){
 
 	printf("Train:Test = %d:%d\n", j, k);
 	printf("Validation accuracy before training: %.3f%%\n", Accuracy(&Net, TestX, TestY, k));
-	TrainGD(&Net, TrainX, TrainY, j, 4000, 1e-2);
+	TrainGD(&Net, TrainX, TrainY, j, 1000, 1e-2);
 	printf("Validation accuracy after training: %.3f%%\n", Accuracy(&Net, TestX, TestY, k));
 
 	double X[4];

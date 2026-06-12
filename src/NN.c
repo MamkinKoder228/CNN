@@ -14,6 +14,19 @@ void RandomInit(Real *Y, Real Min, Real Max, size_t n){
 	}
 }
 
+size_t argmax(Real *arr, size_t n){
+	Real M = arr[0];
+	int maxI = 0;
+	for (int i = 0; i < n; ++i){
+		if (arr[i] >= M){
+			M = arr[i];
+			maxI = i;
+		}
+	}
+
+	return maxI;
+}
+
 void LReLU(Real *X, Real *Y, size_t n){
 	for (size_t i = 0; i < n; ++i){
 		Y[i] = X[i] < 0? X[i] * 0.1 : X[i];
@@ -93,14 +106,13 @@ void CorrectWeights(Layer *L, Real *X, Real *Loss, Real *D, Real *dX, Real Learn
 	for (size_t i = 0; i < L->XDim; ++i){
 		dX[i] = 0;
 		for (size_t j = 0; j < L->YDim; ++j){
-			// dX[i] += Loss[j] / L->YDim * D[j];
 			dX[i] += Loss[j] * D[j] * L->W[i + j * L->XDim];
 		}
 	}
 
 
 	for (size_t i = 0; i < L->YDim; ++i){
-		L->B[i] += -2 * Loss[i] * D[i] * LearningRate;
+		L->B[i] += -Loss[i] * D[i] * LearningRate;
 		for (size_t j = 0; j < L->XDim; ++j){
 			L->W[j + i * L->XDim] += -Loss[i] * D[i] * X[j] * LearningRate;
 		}	
@@ -129,7 +141,6 @@ void TrainGD(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRa
 		double TotalLoss = 0;
 
 		for (size_t sample = 0; sample < n; ++sample){
-			double SampleLoss = 0;
 			H[0] = &X[sample * Net->Layers[0].XDim];
 			for (size_t i = 0; i < Net->LayerCount; ++i){
 				FeedWithoutActivation(&Net->Layers[i], H[i], Z[i]);
@@ -138,7 +149,7 @@ void TrainGD(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRa
 
 			for (size_t i = 0; i < Net->Layers[Net->LayerCount - 1].YDim; ++i){
 				L[i] = H[Net->LayerCount][i] - Y[i + sample * Net->Layers[Net->LayerCount - 1].YDim];
-				SampleLoss += L[i] * L[i];
+				TotalLoss += L[i] * L[i];
 			}
 
 			for (int i = Net->LayerCount - 1; i >= 0; --i){
@@ -148,7 +159,6 @@ void TrainGD(NN *Net, Real *X, Real *Y, size_t n, size_t epochs, Real LearningRa
 				L = L2;
 				L2 = Lt;
 			}
-			TotalLoss += SampleLoss;
 		}
 		#ifdef NN_VERBOSE
 		printf("%d, %.4f\n", epoch, TotalLoss / n);

@@ -53,8 +53,9 @@ void DrawClasses(){
 int main(void){
 	InitScreen(WINDOW_WIDTH, WINDOW_HEIGHT, "NN screen classifier");
 
-	AddLayer(&Net, 2, 6, LReLU, DLReLU);
-	AddLayer(&Net, 6, 1, Sigmoid, DSigmoid);
+	AddLayer(&Net, 2, 10, LReLU, DLReLU);
+	AddLayer(&Net, 10, 10, LReLU, DLReLU);
+	AddLayer(&Net, 10, 1, Sigmoid, DSigmoid);
 
 	while (!(kbhit() && lastkey() == 'q')){
 		int mtype = mouseclick();
@@ -64,7 +65,7 @@ int main(void){
 		}
 
 		if (pointCount > 1)
-			TrainGD(&Net, points, pointTypes, pointCount, 1500, 1e-3);
+			TrainGD(&Net, points, pointTypes, pointCount, 500, 3e-3);
 
 		setbkcolor(BLACK);
 		DrawClasses();
