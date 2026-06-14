@@ -45,6 +45,8 @@ void DLReLU(Real *X, Real *Y, size_t n);
 void Sigmoid(Real *X, Real *Y, size_t n);
 void DSigmoid(Real *X, Real *Y, size_t n);
 void AddLayer(NN *Net, size_t XDim, size_t YDim, ActivationFunction Activation, ActivationDerivative Derivative);
+void SaveNN(NN *Net, char *path);
+void LoadNN(NN *Net, char *path);
 void ClearNN(NN *Net);
 void Feed(Layer *L, Real *X, Real *Y);
 void FeedWithoutActivation(Layer *L, Real *X, Real *Y);

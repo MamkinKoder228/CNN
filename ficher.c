@@ -31,7 +31,7 @@ double Accuracy(NN *Net, double *X, double *Y, int n){
 	int count = 0;
 	double out[3];
 	for (int i = 0; i < n; ++i){
-		PredictNN(Net, &X[i * 4], out);
+		FeedNN(Net, &X[i * 4], out);
 		count += argmax(out, 3) == argmax(&Y[i * 3], 3);
 	}
 
@@ -88,10 +88,13 @@ int main(int argc, char *argv[]){
 	double Y[3];
 	char buffer[64];
 
+	SaveNN(&Net, "ficher.nn");
+	LoadNN(&Net, "ficher.nn");
+	
 	while (buffer[0] != 'q'){
 		fgets(buffer, 64, stdin);
 		if (sscanf(buffer, "%lf %lf %lf %lf", &X[0], &X[1], &X[2], &X[3]) == 4){
-			PredictNN(&Net, X, Y);
+			FeedNN(&Net, X, Y);
 			printf("%.3lf %.3lf %.3lf\n", Y[0], Y[1], Y[2]);
 		}
 	}

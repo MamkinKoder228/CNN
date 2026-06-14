@@ -1,5 +1,8 @@
 #include "NN.h"
 
+static void (*Activations[])(Real *, Real *, size_t n) = {LReLU, Sigmoid};
+static void (*ActivationDerivatives[])(Real *, Real *, size_t n) = {DLReLU, DSigmoid};
+
 Real* CreateRandomMatrix(size_t XDim, size_t YDim, Real Min, Real Max){
 	Real *Y = malloc(XDim * YDim * sizeof(Real));
 	for (size_t i = 0; i < XDim * YDim; ++i){
@@ -63,7 +66,51 @@ void AddLayer(NN *Net, size_t XDim, size_t YDim, ActivationFunction Activation, 
 	Net->ArenaSize = max(Net->ArenaSize, XDim * YDim);
 }
 
+void SaveNN(NN *Net, char *path){
+	FILE *fp = fopen(path, "wb");
+	assert(fp != NULL && "Error saving NN!");
+
+	fwrite(&Net->LayerCount, sizeof(Net->LayerCount), 1, fp);
+	for (size_t i = 0; i < Net->LayerCount; ++i){
+		fwrite(&Net->Layers[i].XDim, sizeof(Net->Layers[i].XDim), 1, fp);
+		fwrite(&Net->Layers[i].YDim, sizeof(Net->Layers[i].YDim), 1, fp);
+		fwrite(Net->Layers[i].W, sizeof(Real), Net->Layers[i].XDim * Net->Layers[i].YDim, fp);
+		fwrite(Net->Layers[i].B, sizeof(Real), Net->Layers[i].YDim, fp);
+		for (char j = 0; j < sizeof(Activations)/sizeof(ActivationFunction); ++j){
+			if (Net->Layers[i].Activation == Activations[j]){
+				fwrite(&j, sizeof(j), 1, fp);
+				break;
+			}
+		}
+	}
+	fclose(fp);
+}
+
+void LoadNN(NN *Net, char *path){
+	FILE *fp = fopen(path, "rb");
+	assert(fp != NULL && "Error loading NN!");
+	if (Net == NULL) return; 
+	ClearNN(Net);
+
+	size_t LayerCount;
+	fread(&LayerCount, sizeof(LayerCount), 1, fp);
+	size_t XDim, YDim;
+	char ActivationType;
+	for (int i = 0; i < LayerCount; ++i){
+		fread(&XDim, sizeof(XDim), 1, fp);
+		fread(&YDim, sizeof(YDim), 1, fp);
+		AddLayer(Net, XDim, YDim, LReLU, DLReLU);
+		fread(Net->Layers[i].W, sizeof(Real), XDim * YDim, fp);
+		fread(Net->Layers[i].B, sizeof(Real), YDim, fp);
+		fread(&ActivationType, sizeof(ActivationType), 1, fp);
+		Net->Layers[i].Activation = Activations[ActivationType];
+		Net->Layers[i].Derivative = ActivationDerivatives[ActivationType];
+	}
+	fclose(fp);
+}
+
 void ClearNN(NN *Net){
+	if (Net == NULL) return;
 	for (size_t i = 0; i < Net->LayerCount; ++i){
 		free(Net->Layers[i].W);
 		free(Net->Layers[i].B);
