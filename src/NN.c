@@ -90,7 +90,7 @@ void FeedWithoutActivation(Layer *L, Real *X, Real *Y){
 	}
 }
 
-void PredictNN(NN *Net, Real *X, Real *Y){
+void FeedNN(NN *Net, Real *X, Real *Y){
 	if (Net->LayerCount == 0)
 		return;
 	Real *Arena = malloc(Net->ArenaSize * sizeof(Real));
