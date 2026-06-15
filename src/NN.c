@@ -1,8 +1,5 @@
 #include "NN.h"
 
-static void (*Activations[])(Real *, Real *, size_t n) = {LReLU, Sigmoid};
-static void (*ActivationDerivatives[])(Real *, Real *, size_t n) = {DLReLU, DSigmoid};
-
 Real* CreateRandomMatrix(size_t XDim, size_t YDim, Real Min, Real Max){
 	Real *Y = malloc(XDim * YDim * sizeof(Real));
 	for (size_t i = 0; i < XDim * YDim; ++i){
@@ -67,6 +64,9 @@ void AddLayer(NN *Net, size_t XDim, size_t YDim, ActivationFunction Activation, 
 }
 
 void SaveNN(NN *Net, char *path){
+	static void (*Activations[])(Real *, Real *, size_t n) = {LReLU, Sigmoid};
+	static void (*ActivationDerivatives[])(Real *, Real *, size_t n) = {DLReLU, DSigmoid};
+
 	FILE *fp = fopen(path, "wb");
 	assert(fp != NULL && "Error saving NN!");
 
@@ -76,7 +76,7 @@ void SaveNN(NN *Net, char *path){
 		fwrite(&Net->Layers[i].YDim, sizeof(Net->Layers[i].YDim), 1, fp);
 		fwrite(Net->Layers[i].W, sizeof(Real), Net->Layers[i].XDim * Net->Layers[i].YDim, fp);
 		fwrite(Net->Layers[i].B, sizeof(Real), Net->Layers[i].YDim, fp);
-		for (char j = 0; j < sizeof(Activations)/sizeof(ActivationFunction); ++j){
+		for (size_t j = 0; j < sizeof(Activations)/sizeof(ActivationFunction); ++j){
 			if (Net->Layers[i].Activation == Activations[j]){
 				fwrite(&j, sizeof(j), 1, fp);
 				break;
@@ -87,6 +87,9 @@ void SaveNN(NN *Net, char *path){
 }
 
 void LoadNN(NN *Net, char *path){
+	static void (*Activations[])(Real *, Real *, size_t n) = {LReLU, Sigmoid};
+	static void (*ActivationDerivatives[])(Real *, Real *, size_t n) = {DLReLU, DSigmoid};
+
 	FILE *fp = fopen(path, "rb");
 	assert(fp != NULL && "Error loading NN!");
 	if (Net == NULL) return; 
@@ -95,7 +98,7 @@ void LoadNN(NN *Net, char *path){
 	size_t LayerCount;
 	fread(&LayerCount, sizeof(LayerCount), 1, fp);
 	size_t XDim, YDim;
-	char ActivationType;
+	size_t ActivationType;
 	for (int i = 0; i < LayerCount; ++i){
 		fread(&XDim, sizeof(XDim), 1, fp);
 		fread(&YDim, sizeof(YDim), 1, fp);

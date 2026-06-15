@@ -81,16 +81,13 @@ int main(int argc, char *argv[]){
 
 	printf("Train:Test = %d:%d\n", j, k);
 	printf("Validation accuracy before training: %.3f%%\n", Accuracy(&Net, TestX, TestY, k));
-	TrainGD(&Net, TrainX, TrainY, j, 1000, 1e-2);
+	TrainGD(&Net, TrainX, TrainY, j, 1000, 3e-2);
 	printf("Validation accuracy after training: %.3f%%\n", Accuracy(&Net, TestX, TestY, k));
 
 	double X[4];
 	double Y[3];
 	char buffer[64];
 
-	SaveNN(&Net, "ficher.nn");
-	LoadNN(&Net, "ficher.nn");
-	
 	while (buffer[0] != 'q'){
 		fgets(buffer, 64, stdin);
 		if (sscanf(buffer, "%lf %lf %lf %lf", &X[0], &X[1], &X[2], &X[3]) == 4){
